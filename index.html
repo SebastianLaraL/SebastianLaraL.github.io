@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sebastián Lara — Gameplay Programmer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:          #070b12;
+      --surface:     #0d1421;
+      --surface2:    #121b2e;
+      --border:      #1c2a40;
+      --border2:     #243348;
+      --accent:      #e8541a;
+      --accent-dim:  rgba(232, 84, 26, 0.12);
+      --accent-glow: rgba(232, 84, 26, 0.25);
+      --cyan:        #38bdf8;
+      --cyan-dim:    rgba(56, 189, 248, 0.10);
+      --text:        #9eb0c8;
+      --text-muted:  #4a607a;
+      --text-bright: #dde8f5;
+      --mono:        'JetBrains Mono', monospace;
+      --display:     'Rajdhani', sans-serif;
+      --body:        'Manrope', sans-serif;
+      --radius:      6px;
+      --radius-lg:   12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      font-weight: 400;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 300px;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(232,84,26,0.06), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    main { position: relative; z-index: 1; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+      height: 64px;
+      background: rgba(7, 11, 18, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--display); font-size: 1.1rem; font-weight: 700; color: var(--text-bright); letter-spacing: 0.03em; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-family: var(--mono); font-size: 0.75rem; color: var(--text-muted); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text-bright); }
+
+    /* HERO */
+    #hero { min-height: 100vh; display: flex; align-items: center; padding: 6rem clamp(1.5rem, 8vw, 8rem) 4rem; }
+    .hero-inner { max-width: 800px; }
+    .hero-label { font-family: var(--display); font-size: clamp(1.1rem, 2.5vw, 1.6rem); font-weight: 600; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+    .hero-label::before { content: ''; display: block; width: 28px; height: 2px; background: var(--accent); }
+    .hero-name { font-family: var(--display); font-size: clamp(2rem, 4.5vw, 3rem); font-weight: 700; color: var(--text-bright); line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 0.4rem; }
+    .hero-title { font-family: var(--mono); font-size: clamp(0.8rem, 1.5vw, 1rem); color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.75rem; }
+    .hero-name .accent { color: var(--accent); }
+    .hero-title { font-family: var(--display); font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1.75rem; }
+    .hero-desc { font-size: 1rem; color: var(--text); max-width: 520px; line-height: 1.75; margin-bottom: 2.5rem; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2.5rem; }
+    .tag { font-family: var(--mono); font-size: 0.7rem; padding: 0.3rem 0.75rem; border-radius: 3px; border: 1px solid var(--border2); color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; background: var(--surface); }
+    .tag.ue5   { border-color: rgba(232,84,26,0.4); color: var(--accent); background: var(--accent-dim); }
+    .tag.cpp   { border-color: rgba(56,189,248,0.4); color: var(--cyan); background: var(--cyan-dim); }
+    .tag.bp    { border-color: rgba(99,179,237,0.4); color: #63b3ed; background: rgba(99,179,237,0.08); }
+    .tag.unity { border-color: rgba(255,255,255,0.2); color: #e2e8f0; background: rgba(255,255,255,0.05); }
+    .tag.wip   { border-color: rgba(250,204,21,0.3); color: #facc15; background: rgba(250,204,21,0.08); }
+    .tag.multi { border-color: rgba(167,139,250,0.3); color: #a78bfa; background: rgba(167,139,250,0.08); }
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .btn { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.75rem 1.75rem; border-radius: var(--radius); text-decoration: none; transition: all 0.2s; cursor: pointer; display: inline-block; }
+    .btn-primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: #ff6a35; box-shadow: 0 0 24px var(--accent-glow); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+    .btn-outline:hover { border-color: var(--text-muted); color: var(--text-bright); transform: translateY(-1px); }
+
+    /* SECTIONS */
+    section { padding: 5rem clamp(1.5rem, 8vw, 8rem); }
+    .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; }
+    .section-title { font-family: var(--display); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: var(--text-bright); letter-spacing: 0.02em; }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* PROJECTS */
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
+    .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s; display: flex; flex-direction: column; }
+    .project-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .project-card.featured { grid-column: span 2; }
+
+    /* Video embed */
+    .project-video {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+    .project-video iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Thumbnail area */
+    .project-thumb { position: relative; width: 100%; aspect-ratio: 16/8; overflow: hidden; background: var(--surface2); display: flex; align-items: center; justify-content: center; }
+    .project-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; opacity: 0.85; }
+    .project-card:hover .project-thumb img { transform: scale(1.04); opacity: 1; }
+    .thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 2.5rem; color: var(--border2); position: relative; overflow: hidden; }
+    .thumb-placeholder::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.015) 20px, rgba(255,255,255,0.015) 21px); }
+    .thumb-ue5   { background: linear-gradient(135deg, #0d1421 0%, #1a0e06 100%); }
+    .thumb-cpp   { background: linear-gradient(135deg, #0d1421 0%, #071420 100%); }
+    .thumb-taxi  { background: linear-gradient(135deg, #0d1421 0%, #0a1a12 100%); }
+    .thumb-qix   { background: linear-gradient(135deg, #0d1421 0%, #160d1a 100%); }
+    .thumb-icon  { font-size: 3rem; opacity: 0.3; z-index: 1; }
+
+    /* Card body */
+    .project-body { padding: 1.4rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; }
+    .project-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .project-name { font-family: var(--display); font-size: 1.3rem; font-weight: 700; color: var(--text-bright); letter-spacing: 0.02em; }
+    .project-desc { font-size: 0.875rem; color: var(--text); line-height: 1.65; flex: 1; }
+    .project-links { display: flex; gap: 0.75rem; padding-top: 0.25rem; border-top: 1px solid var(--border); margin-top: 0.25rem; }
+    .project-link { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: color 0.2s; padding: 0.4rem 0; }
+    .project-link:hover { color: var(--accent); }
+    .project-link.cyan:hover { color: var(--cyan); }
+
+    /* SKILLS */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+    .skill-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+    .skill-group-label { font-family: var(--mono); font-size: 0.65rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .skill-group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .skill-items { display: flex; flex-direction: column; gap: 0.6rem; }
+    .skill-item { display: flex; align-items: center; gap: 0.75rem; }
+    .skill-name { font-size: 0.875rem; color: var(--text); min-width: 140px; }
+    .skill-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .skill-fill { height: 100%; border-radius: 2px; background: var(--accent); transform-origin: left; animation: fillBar 1s ease forwards; transform: scaleX(0); }
+    .skill-fill.cyan { background: var(--cyan); }
+    @keyframes fillBar { to { transform: scaleX(1); } }
+
+    /* ABOUT */
+    #about { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .about-inner { max-width: 660px; }
+    .about-inner p { font-size: 1rem; line-height: 1.8; color: var(--text); margin-bottom: 1rem; }
+    .about-inner p:last-child { margin-bottom: 0; }
+    .about-highlight { color: var(--text-bright); font-weight: 500; }
+
+    /* CONTACT */
+    #contact { text-align: center; }
+    .contact-inner { max-width: 500px; margin: 0 auto; }
+    .contact-inner p { font-size: 0.95rem; color: var(--text); margin-bottom: 2rem; line-height: 1.75; }
+    .contact-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; }
+
+    /* FOOTER */
+    footer { padding: 2rem clamp(1.5rem, 8vw, 8rem); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-left { font-family: var(--mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.08em; }
+
+    /* CURSOR */
+    .cursor { display: inline-block; width: 3px; height: 0.85em; background: var(--accent); margin-left: 4px; vertical-align: middle; animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .project-card.featured { grid-column: span 1; }
+      .nav-links { display: none; }
+      footer { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">Sebastián Lara</span>
+  <ul class="nav-links">
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <p class="hero-label">Gameplay & Video Game Programmer</p>
+    <h1 class="hero-name">Sebastián <span class="accent">Lara</span><span class="cursor"></span></h1>
+    <p class="hero-title">Unreal Engine 5 · C++ · Blueprints</p>
+    <p class="hero-desc">
+      Specialized in building gameplay systems, multiplayer mechanics, and engine-adjacent tooling in Unreal Engine 5.
+      Focused on writing clean, robust C++ that makes games feel right.
+    </p>
+    <div class="hero-tags">
+      <span class="tag ue5">Unreal Engine 5</span>
+      <span class="tag cpp">C++</span>
+      <span class="tag bp">Blueprints</span>
+      <span class="tag multi">Multiplayer</span>
+      <span class="tag unity">Unity</span>
+      <span class="tag">Raylib</span>
+      <span class="tag">ODE Physics</span>
+    </div>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn btn-primary">View Projects</a>
+      <a href="https://github.com/SebastianLaraL" target="_blank" class="btn btn-outline">GitHub Personal ↗</a>
+      <a href="https://github.com/SebastianLaraUDG" target="_blank" class="btn btn-outline">GitHub University (most of my projects are here) ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header">
+    <h2 class="section-title">Projects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- ASH STORMS — featured with embedded video -->
+    <div class="project-card featured reveal">
+      <div class="project-video">
+        <iframe
+          src="https://www.youtube.com/embed/vgZ5N8qKAlI"
+          title="Ash Storms / Tormentas de Ceniza — Gameplay"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag ue5">UE5</span>
+          <span class="tag cpp">C++</span>
+          <span class="tag">Blueprints</span>
+          <span class="tag">Team Project</span>
+        </div>
+        <h3 class="project-name">Ash Storms — Tormentas de Ceniza</h3>
+        <p class="project-desc">
+          Lead gameplay programmer on a team-built Unreal Engine 5 project. Responsible for core player mechanics, interaction systems, and gameplay architecture using both C++ and Blueprints. Serves as the foundation for understanding UE5's gameplay framework end-to-end.
+        </p>
+        <div class="project-links">
+          <a href="https://youtu.be/vgZ5N8qKAlI?si=QAB3V8Nc1OC-Io-N" target="_blank" class="project-link">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Watch on YouTube
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- THIRD PERSON MULTIPLAYER -->
+    <div class="project-card reveal">
+      <div class="project-thumb thumb-ue5 thumb-placeholder">
+        <span class="thumb-icon">🎮</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag ue5">UE5</span>
+          <span class="tag cpp">C++</span>
+          <span class="tag multi">Multiplayer</span>
+          <span class="tag">Steam</span>
+          <span class="tag wip">In Development</span>
+        </div>
+        <h3 class="project-name">Third-Person Multiplayer</h3>
+        <p class="project-desc">
+          Online third-person shooter built in Unreal Engine 5. Implements Steam Online Subsystem for peer-to-peer sessions, full character replication, networked movement, and gameplay state synchronization in C++ and Blueprints.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/SebastianLaraL/Third-Person-Multiplayer" target="_blank" class="project-link cyan">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View Repo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMON UI SUBSYSTEM -->
+    <div class="project-card reveal">
+      <div class="project-thumb thumb-cpp thumb-placeholder">
+        <span class="thumb-icon">⚙️</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag ue5">UE5</span>
+          <span class="tag cpp">C++</span>
+          <span class="tag">Common UI</span>
+          <span class="tag wip">In Development</span>
+        </div>
+        <h3 class="project-name">Common UI Subsystem</h3>
+        <p class="project-desc">
+          Custom UE5 subsystem implemented in pure C++ leveraging Epic's Common UI plugin. Focuses on scalable HUD architecture, input-agnostic widget management, and platform-independent UI routing — a deep dive into UE5's UI framework internals.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/SebastianLaraUDG/FrontendUI-Course" target="_blank" class="project-link cyan">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View Repo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLATAFORMERO -->
+    <div class="project-card reveal">
+      <div class="project-thumb thumb-cpp thumb-placeholder">
+        <span class="thumb-icon">🧱</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag cpp">C++</span>
+          <span class="tag">Raylib</span>
+          <span class="tag">Physics</span>
+          <span class="tag">AI</span>
+        </div>
+        <h3 class="project-name">2D Platformer</h3>
+        <p class="project-desc">
+          2D platformer with a custom physics engine and basic enemy AI, built entirely from scratch in C++ with Raylib — no external physics library. Implements collision resolution, gravity, and state-machine-driven enemy behavior from the ground up.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/SebastianLaraL/Plataformero" target="_blank" class="project-link cyan">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View Repo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- QIX -->
+    <div class="project-card reveal">
+      <div class="project-thumb thumb-qix thumb-placeholder">
+        <span class="thumb-icon">◈</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag cpp">C</span>
+          <span class="tag">Raylib</span>
+          <span class="tag">Recreation</span>
+        </div>
+        <h3 class="project-name">Qix (1981) — Recreation</h3>
+        <p class="project-desc">
+          Faithful recreation of Taito's Qix (1981) built in C with Raylib. Reproduces the original's line-drawing capture mechanics, enemy movement patterns, and collision detection — a study in classic arcade game systems.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/SebastianLaraL/Proyecto-Qix" target="_blank" class="project-link cyan">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View Repo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRAZY TAXI -->
+    <div class="project-card reveal">
+      <div class="project-thumb thumb-taxi thumb-placeholder">
+        <span class="thumb-icon">🚕</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag cpp">C</span>
+          <span class="tag">Raylib</span>
+          <span class="tag">ODE</span>
+          <span class="tag">Physics</span>
+        </div>
+        <h3 class="project-name">Crazy Taxi — Physics Replica</h3>
+        <p class="project-desc">
+          3D Crazy Taxi replica using Raylib for rendering and Open Dynamics Engine (ODE) for rigid body simulation. Implements vehicle physics, wheel constraints, and real-time dynamics — a hands-on exploration of 3D physics integration.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/SebastianLaraL/Crazy-Taxi" target="_blank" class="project-link cyan">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View Repo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TWISTED METAL -->
+    <div class="project-card reveal">
+      <div class="project-thumb thumb-qix thumb-placeholder">
+        <span class="thumb-icon">🚗</span>
+      </div>
+      <div class="project-body">
+        <div class="project-tags">
+          <span class="tag">Unity</span>
+          <span class="tag cpp">C#</span>
+          <span class="tag">Recreation</span>
+        </div>
+        <h3 class="project-name">Twisted Metal — Recreation</h3>
+        <p class="project-desc">
+          vehicular combat game recreation built in Unity using C#. Implements vehicle physics, weapon systems, and arena-based combat mechanics — showcasing gameplay systems design within Unity's component-driven architecture.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/SebastianLaraUDG/Twisted-Metal" target="_blank" class="project-link cyan">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            View Repo
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<section id="skills">
+  <div class="section-header">
+    <h2 class="section-title">Skills</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="skills-grid">
+
+    <div class="skill-group reveal">
+      <p class="skill-group-label">Languages</p>
+      <div class="skill-items">
+        <div class="skill-item">
+          <span class="skill-name">C++</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:90%; animation-delay:0.1s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">C</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:78%; animation-delay:0.2s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">C#</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:45%; animation-delay:0.3s;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-group reveal">
+      <p class="skill-group-label">Engines & Frameworks</p>
+      <div class="skill-items">
+        <div class="skill-item">
+          <span class="skill-name">C++ (Unreal Engine)</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:82%; animation-delay:0.1s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Blueprints (UE5)</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:78%; animation-delay:0.2s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Raylib</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:70%; animation-delay:0.3s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Unity</span>
+          <div class="skill-bar"><div class="skill-fill" style="width:70%; animation-delay:0.4s;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="skill-group reveal">
+      <p class="skill-group-label">Systems & Concepts</p>
+      <div class="skill-items">
+        <div class="skill-item">
+          <span class="skill-name">Gameplay Systems</span>
+          <div class="skill-bar"><div class="skill-fill cyan" style="width:88%; animation-delay:0.1s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Gameplay Architecture</span>
+          <div class="skill-bar"><div class="skill-fill cyan" style="width:75%; animation-delay:0.2s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Multiplayer / Net</span>
+          <div class="skill-bar"><div class="skill-fill cyan" style="width:45%; animation-delay:0.3s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Physics (ODE)</span>
+          <div class="skill-bar"><div class="skill-fill cyan" style="width:28%; animation-delay:0.4s;"></div></div>
+        </div>
+        <div class="skill-item">
+          <span class="skill-name">Basic OpenGL</span>
+          <div class="skill-bar"><div class="skill-fill cyan" style="width:18%; animation-delay:0.5s;"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header">
+    <h2 class="section-title">About</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="about-inner reveal">
+    <p>
+      I'm a <span class="about-highlight">gameplay and video game programmer</span> specializing in
+      <span class="about-highlight">Unreal Engine 5</span> and <span class="about-highlight">C++</span>,
+      currently finishing my degree in Videogame Engineering. My focus is on building
+      the systems that make gameplay feel responsive, fair, and fun — from networked
+      multiplayer mechanics to low-level physics from scratch.
+    </p>
+    <p>
+      I've worked across the full range: UE5 multiplayer with Steam integration,
+      custom physics engines in Raylib, and UI framework architecture with Common UI.
+      I believe the best gameplay code is invisible — you only notice it when something's wrong.
+    </p>
+    <p>
+      Currently deepening my expertise in <span class="about-highlight">UE5 multiplayer C++</span>
+      and engine subsystems, with a strong interest in joining a team where
+      gameplay systems and player experience are taken seriously.
+    </p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-header" style="justify-content:center; margin-bottom:1.5rem;">
+    <h2 class="section-title">Get in Touch</h2>
+  </div>
+  <div class="contact-inner reveal">
+    <p>
+      Open to internships and junior positions in gameplay programming —
+      especially UE5/C++ focused roles. Don't hesitate to reach out.
+    </p>
+    <div class="contact-links">
+      <a href="mailto:sebastian.laralopez@outlook.com" class="btn btn-primary">✉ Email Me</a>
+      <a href="https://github.com/SebastianLaraL" target="_blank" class="btn btn-outline">GitHub Personal ↗</a>
+      <a href="https://github.com/SebastianLaraUDG" target="_blank" class="btn btn-outline">GitHub University (most of my projects are here) ↗</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span class="footer-left">© 2026 Sebastián Lara · Gameplay & Video Game Programmer</span>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
