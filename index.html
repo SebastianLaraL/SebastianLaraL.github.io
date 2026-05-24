@@ -76,7 +76,8 @@
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
-    .nav-logo { font-family: var(--display); font-size: 1.1rem; font-weight: 700; color: var(--text-bright); letter-spacing: 0.03em; }
+    .nav-logo { font-family: var(--display); font-size: 1.1rem; font-weight: 700; color: var(--text-bright); letter-spacing: 0.03em; text-decoration: none; transition: color 0.2s; }
+    .nav-logo:hover { color: var(--accent); }
     .nav-links { display: flex; gap: 2rem; list-style: none; }
     .nav-links a { font-family: var(--mono); font-size: 0.75rem; color: var(--text-muted); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
     .nav-links a:hover { color: var(--text-bright); }
@@ -116,7 +117,8 @@
     .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; }
     .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s; display: flex; flex-direction: column; }
     .project-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-    .project-card.featured { grid-column: span 2; }
+    .project-card.featured { grid-column: 1 / -1; }
+    .project-card.featured .project-video { aspect-ratio: 16/7; }
 
     /* Video embed */
     .project-video {
@@ -203,7 +205,7 @@
 <body>
 
 <nav>
-  <span class="nav-logo">Sebastián Lara</span>
+  <a href="#hero" class="nav-logo">Sebastián Lara</a>
   <ul class="nav-links">
     <li><a href="#projects">Projects</a></li>
     <li><a href="#skills">Skills</a></li>
